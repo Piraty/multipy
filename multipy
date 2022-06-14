@@ -1,0 +1,223 @@
+#!/bin/bash
+# multipy [PYTHON_VERSION...] - build and install multiple versions of python
+
+set -e
+set -u
+set -o pipefail
+
+__version__="0.1.0"
+
+_multipy_latest_stable="3.10"
+_multipy_latest_pre="3.11"
+_multipy_default_prefix="$HOME/multipy"
+
+usage() {
+	cat <<USAGE
+multipy [PYTHON_VERSION...] - build and install multiple versions of python
+
+PYTHON_VERSION denotes the version to build+install and may be one or more of
+	(empty)          same as 'latest'
+	latest           latest stable release ($_multipy_latest_stable)
+	pre-release      latest pre-release ($_multipy_latest_pre)
+	X                lastest release of that branch
+	X.Y              lastest release of that branch
+	X.Y.Z            exact release
+
+Environment
+	MULTIPY_PREFIX           where to install. default: $_multipy_default_prefix
+
+	CONFIGURE_ARGS           passed to './configure'
+	MAKEJOBS                 passed to make, defaults to \$(nproc)
+	MAKE_BUILD_ARGS          passed to 'make'
+	MAKE_INSTALL_ARGS        passed to 'make install'
+
+	CC,CFLAGS and friends    as usual (it's autotools afterall)
+USAGE
+}
+
+: "${MULTIPY_PREFIX:="$_multipy_default_prefix"}"
+: "${CONFIGURE_ARGS:=}"
+: "${MAKEJOBS:=$(nproc)}"
+: "${MAKE_BUILD_ARGS:=}"
+: "${MAKE_INSTALL_ARGS:=}"
+
+: "${CFLAGS:="-Os -g0"}"
+: "${CXXFLAGS:="$CFLAGS"}"
+: "${LDFLAGS:=}"
+export CFLAGS CXXFLAGS LDFLAGS
+
+# report full qualified version for aliases and partial versions
+get_real_version() {
+	candidate=
+
+	# aliases
+	case "$1" in
+		latest) candidate="$_multipy_latest_stable" ;;
+		pre | pre-release) candidate="$_multipy_latest_pre" ;;
+		*) candidate="$1" ;;
+	esac
+
+	case "$candidate" in
+		3) candidate="3.10" ;;
+	esac
+
+	case "$candidate" in
+		3.7) echo "3.7.13" ;;
+		3.8) echo "3.8.13" ;;
+		3.9) echo "3.9.13" ;;
+		3.10) echo "3.10.5" ;;
+		3.11) echo "3.11.0a2" ;;
+		*) echo "$candidate" ;;
+	esac
+}
+
+# report md5sums as published for a specific release
+python_release_md5() {
+	filename="$1"
+	# https://www.python.org/downloads/release/python-${X}${Y}${Z}/
+	case "$filename" in
+		Python-3.6.15.tar.xz) echo "bc04aa6c2a1a172a35012abd668538cd" ;;
+		Python-3.7.12.tar.xz) echo "352ea082224121a8b7bc4d6d06e5de39" ;;
+		Python-3.7.13.tar.xz) echo "10822726f75fd7efe05a94fbd6ac2258" ;;
+		Python-3.8.12.tar.xz) echo "9dd8f82e586b776383c82e27923f8795" ;;
+		Python-3.8.13.tar.xz) echo "c4b7100dcaace9d33ab1fda9a3a038d6" ;;
+		Python-3.9.7.tar.xz) echo "fddb060b483bc01850a3f412eea1d954" ;;
+		Python-3.9.8.tar.xz) echo "d4875c1832c8f757280794f6d5e9c95f" ;;
+		Python-3.9.9.tar.xz) echo "11d12076311563252a995201248d17e5" ;;
+		Python-3.9.13.tar.xz) echo "5e2411217b0060828d5f923eb422a3b8" ;;
+		Python-3.10.0.tar.xz) echo "3e7035d272680f80e3ce4e8eb492d580" ;;
+		Python-3.10.5.tar.xz) echo "f05727cb3489aa93cd57eb561c16747b" ;;
+		Python-3.11.0a1.tar.xz) echo "c163bd09fdc80116dafe97bf7c40ff3f" ;;
+		Python-3.11.0a2.tar.xz) echo "cd5003eaa72f439f35e79661c6cfea08" ;;
+		Python-3.11.0b3.tar.xz) echo "d8ebc28f88e5e0c0215cf074537f0d48" ;;
+	esac
+}
+
+# fetch python maintainers' pubkeys, as outlined here:
+# https://www.python.org/downloads/
+fetch_public_keys() {
+	for pubkey in \
+		64E628F8D684696D \
+		B26995E310250568 \
+		2D347EA6AA65421D; do
+		gpg2 --recv-keys "$pubkey"
+	done
+}
+
+verify_python_release_md5() {
+	filename="$1"
+	md5="$(python_release_md5 "$filename")"
+	printf '%s  %s\n' "$md5" "$filename" | md5sum --strict -c - || return 1
+}
+
+verify_python_release_sig_gpg() {
+	filename="$1"
+	gpg2 --verify "$filename".asc "$filename" || return 1
+}
+verify_python_release() {
+	filename="$1"
+	verify_python_release_md5 "$filename" || return 1
+	verify_python_release_sig_gpg "$filename" || return 1
+}
+
+get_release() {
+	version="$1"
+	filename="Python-${version}.tar.xz"
+
+	# fetch if necessary
+	if ! verify_python_release "$filename" >/dev/null 2>&1; then
+		# filter pre-release suffix from dir
+		real_version="$(echo "$version" | sed -n -E -e 's/([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')"
+
+		curl -LOs "https://www.python.org/ftp/python/${real_version}/${filename}.asc"
+		curl -LO "https://www.python.org/ftp/python/${real_version}/${filename}"
+		verify_python_release "$filename"
+	fi
+
+	# clean
+	rm -rf "Python-${version}"
+
+	# extract
+	tar -xJf "$filename"
+}
+
+do_patch() {
+	:
+}
+
+do_configure() {
+	[ -f configure ] || autoreconf -vfi
+
+	# shellcheck disable=SC2086
+	./configure \
+		--prefix="$MULTIPY_PREFIX" \
+		--disable-test-modules \
+		--with-system-ffi \
+		--with-system-expat \
+		$CONFIGURE_ARGS
+	#		--enable-optimizations \
+}
+
+do_build() {
+	# shellcheck disable=SC2086
+	make clean
+	make \
+		-j"$MAKEJOBS" \
+		$MAKE_BUILD_ARGS
+}
+
+do_install() {
+	# shellcheck disable=SC2086
+	make \
+		$MAKE_INSTALL_ARGS \
+		altinstall
+}
+
+case "${1:-""}" in
+	-v | --version)
+		echo "$__version__"
+		exit
+		;;
+	-h | --help)
+		usage
+		exit
+		;;
+	-*)
+		usage
+		exit 1
+		;;
+	"")
+		set -- "latest"
+		;;
+esac
+
+# parse args and set a curated version list
+versions=
+for arg; do
+	versions="$versions $(get_real_version "$arg")"
+done
+# shellcheck disable=SC2046,SC2086
+set -- $(printf '%s\n' $versions | sort --version-sort | uniq)
+
+echo
+echo "BUILDING PYTHON: $*"
+echo
+
+# prepare
+fetch_public_keys
+
+# fetch all source tarballs up front
+for version; do
+	get_release "$version"
+done
+
+# build
+for version; do
+	(
+		cd Python-"$version"
+		do_patch
+		do_configure
+		do_build
+		do_install
+	)
+done
