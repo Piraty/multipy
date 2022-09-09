@@ -62,6 +62,7 @@ get_real_version() {
 	esac
 
 	case "$candidate" in
+		3.6) echo "3.6.15" ;;
 		3.7) echo "3.7.14" ;;
 		3.8) echo "3.8.14" ;;
 		3.9) echo "3.9.14" ;;
