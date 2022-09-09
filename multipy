@@ -228,3 +228,8 @@ for version; do
 		do_install
 	)
 done
+
+echo
+echo "BUILT AND INSTALLED PYTHON: $*"
+echo "DONE"
+echo
