@@ -186,6 +186,11 @@ do_install() {
 }
 
 case "${1:-""}" in
+	-a | --all)
+		all_py_versions="$(sed -ne 's/.*Python-\(.*\)\.tar\.xz).*/\1/p' "$0")"
+		# shellcheck disable=SC2046
+		set -- $all_py_versions
+		;;
 	-v | --version)
 		echo "$__version__"
 		exit
