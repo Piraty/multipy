@@ -64,7 +64,7 @@ get_real_version() {
 	case "$candidate" in
 		3.6) echo "3.6.15" ;;
 		3.7) echo "3.7.15" ;;
-		3.8) echo "3.8.14" ;;
+		3.8) echo "3.8.15" ;;
 		3.9) echo "3.9.14" ;;
 		3.10) echo "3.10.7" ;;
 		3.11) echo "3.11.0rc2" ;;
@@ -85,6 +85,7 @@ python_release_md5() {
 		Python-3.8.12.tar.xz) echo "9dd8f82e586b776383c82e27923f8795" ;;
 		Python-3.8.13.tar.xz) echo "c4b7100dcaace9d33ab1fda9a3a038d6" ;;
 		Python-3.8.14.tar.xz) echo "78710eed185b71f4198d354502ff62c9" ;;
+		Python-3.8.15.tar.xz) echo "cca78a827d2327f5c3ff2dee9f526e7e" ;;
 		Python-3.9.7.tar.xz) echo "fddb060b483bc01850a3f412eea1d954" ;;
 		Python-3.9.8.tar.xz) echo "d4875c1832c8f757280794f6d5e9c95f" ;;
 		Python-3.9.9.tar.xz) echo "11d12076311563252a995201248d17e5" ;;
