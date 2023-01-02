@@ -7,7 +7,7 @@ set -o pipefail
 
 __version__="0.3.0"
 
-_multipy_latest_stable="3.10"
+_multipy_latest_stable="3.11"
 _multipy_latest_pre="3.11"
 _multipy_default_prefix="$HOME/multipy"
 
@@ -67,7 +67,7 @@ get_real_version() {
 		3.8) echo "3.8.15" ;;
 		3.9) echo "3.9.15" ;;
 		3.10) echo "3.10.8" ;;
-		3.11) echo "3.11.0rc2" ;;
+		3.11) echo "3.11.1" ;;
 		*) echo "$candidate" ;;
 	esac
 }
@@ -102,6 +102,7 @@ python_release_md5() {
 		Python-3.11.0b3.tar.xz) echo "d8ebc28f88e5e0c0215cf074537f0d48" ;;
 		Python-3.11.0rc1.tar.xz) echo "013eb698ab20c284e5b8373435add767" ;;
 		Python-3.11.0rc2.tar.xz) echo "27ccc3ff3fdcf7f1ab178066e41e9dd5" ;;
+		Python-3.11.1.tar.xz) echo "4efe92adf28875c77d3b9b2e8d3bc44a" ;;
 	esac
 }
 
