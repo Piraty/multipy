@@ -8,7 +8,7 @@ set -o pipefail
 __version__="0.3.0"
 
 _multipy_latest_stable="3.11"
-_multipy_latest_pre="3.11"
+_multipy_latest_pre="3.12"
 _multipy_default_prefix="$HOME/multipy"
 
 usage() {
@@ -68,6 +68,7 @@ get_real_version() {
 		3.9) echo "3.9.15" ;;
 		3.10) echo "3.10.8" ;;
 		3.11) echo "3.11.1" ;;
+		3.12) echo "3.12.0a3" ;;
 		*) echo "$candidate" ;;
 	esac
 }
@@ -103,6 +104,7 @@ python_release_md5() {
 		Python-3.11.0rc1.tar.xz) echo "013eb698ab20c284e5b8373435add767" ;;
 		Python-3.11.0rc2.tar.xz) echo "27ccc3ff3fdcf7f1ab178066e41e9dd5" ;;
 		Python-3.11.1.tar.xz) echo "4efe92adf28875c77d3b9b2e8d3bc44a" ;;
+		Python-3.12.0a3.tar.xz) echo "199338e6b375c6f70519d3ebbb5c98c3" ;;
 	esac
 }
 
@@ -112,7 +114,8 @@ fetch_public_keys() {
 	for pubkey in \
 		64E628F8D684696D \
 		B26995E310250568 \
-		2D347EA6AA65421D; do
+		2D347EA6AA65421D \
+		A821E680E5FA6305; do
 		gpg2 --recv-keys "$pubkey"
 	done
 }
