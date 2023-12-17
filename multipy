@@ -7,7 +7,7 @@ set -e
 set -u
 set -o pipefail
 
-__version__="0.3.0"
+__version__="1.0.0"
 
 _multipy_latest_stable="3.12"
 _multipy_latest_pre="3.13"
