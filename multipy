@@ -60,10 +60,15 @@ get_real_version() {
 	esac
 
 	case "$candidate" in
+		2) candidate="2.7" ;;
+	esac
+
+	case "$candidate" in
 		3) candidate="3.11" ;;
 	esac
 
 	case "$candidate" in
+		2.7) echo "2.7.18" ;;
 		3.6) echo "3.6.15" ;;
 		3.7) echo "3.7.15" ;;
 		3.8) echo "3.8.15" ;;
@@ -81,6 +86,7 @@ python_release_md5() {
 	# https://www.python.org/downloads/source/
 	# https://www.python.org/downloads/release/python-${X}${Y}${Z}/
 	case "$filename" in
+		Python-2.7.18.tar.xz) echo "fd6cc8ec0a78c44036f825e739f36e5a" ;;
 		Python-3.6.15.tar.xz) echo "bc04aa6c2a1a172a35012abd668538cd" ;;
 		Python-3.7.12.tar.xz) echo "352ea082224121a8b7bc4d6d06e5de39" ;;
 		Python-3.7.13.tar.xz) echo "10822726f75fd7efe05a94fbd6ac2258" ;;
@@ -129,6 +135,7 @@ fetch_public_keys() {
 		64E628F8D684696D \
 		B26995E310250568 \
 		2D347EA6AA65421D \
+		04C367C218ADD4FF \
 		A821E680E5FA6305; do
 		gpg2 --recv-keys "$pubkey"
 	done
