@@ -15,15 +15,20 @@ _multipy_default_prefix="$HOME/multipy"
 
 usage() {
 	cat <<USAGE
-multipy [PYTHON_VERSION...] - build and install multiple versions of python
+multipy [OPTARGS] [PYTHON_VERSION..] - build and install multiple versions of python
 
 PYTHON_VERSION denotes the version to build+install and may be one or more of
 	(empty)          same as 'latest'
+	all              build ALL versions known to multipy
 	latest           latest stable release ($_multipy_latest_stable)
 	pre-release      latest pre-release ($_multipy_latest_pre)
 	X                lastest release of that branch
 	X.Y              lastest release of that branch
 	X.Y.Z            exact release
+
+OPTARGS
+	-h | --help      show this help
+	-V | --version   show version
 
 Environment
 	MULTIPY_PREFIX           where to install. default: $_multipy_default_prefix
@@ -217,12 +222,12 @@ do_install() {
 }
 
 case "${1:-""}" in
-	-a | --all)
+	all)
 		all_py_versions="$(sed -ne 's/.*Python-\(.*\)\.tar\.xz).*/\1/p' "$0")"
 		# shellcheck disable=SC2046
 		set -- $all_py_versions
 		;;
-	-v | --version)
+	-V | --version)
 		echo "$__version__"
 		exit
 		;;
