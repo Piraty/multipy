@@ -164,8 +164,8 @@ verify_python_release_sig_gpg() {
 }
 verify_python_release() {
 	filename="$1"
-	verify_python_release_md5 "$filename" || return 1
 	verify_python_release_sig_gpg "$filename" || return 1
+	verify_python_release_md5 "$filename" || return 1
 }
 
 get_release() {
@@ -179,8 +179,8 @@ get_release() {
 
 		curl -LOs "https://www.python.org/ftp/python/${real_version}/${filename}.asc"
 		curl -LO "https://www.python.org/ftp/python/${real_version}/${filename}"
-		verify_python_release "$filename"
 	fi
+	verify_python_release "$filename"
 
 	# clean
 	rm -rf "Python-${version}"
