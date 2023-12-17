@@ -1,5 +1,7 @@
 #!/bin/bash
 # multipy [PYTHON_VERSION...] - build and install multiple versions of python
+#
+# SPDX-License-Identifier: 0BSD
 
 set -e
 set -u
